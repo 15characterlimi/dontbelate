@@ -10,9 +10,8 @@
 import { listAccounts } from "./accounts";
 import { fetchEvents } from "./calendar";
 import { type Meeting, openTime, selectMeetings } from "./meetings";
+import { getSettings, isPaused } from "./settings";
 
-/** How long before a meeting's start to open it. */
-const LEAD_MS = 60_000;
 /** Meetings are still opened up to this long after they started. */
 const GRACE_MS = 5 * 60_000;
 /** How far ahead to look for meetings on each sync. */
@@ -22,6 +21,8 @@ const SYNC_PERIOD_MINUTES = 5;
 const OPENED_RETENTION_MS = 24 * 60 * 60_000;
 
 const SYNC_ALARM = "sync";
+/** Fires when a pause ends. */
+const RESUME_ALARM = "resume";
 const OPEN_ALARM_PREFIX = "open:";
 const MEETINGS_KEY = "meetings";
 const OPENED_KEY = "opened";
@@ -76,12 +77,20 @@ async function doSync(): Promise<void> {
   await chrome.storage.local.set({ [MEETINGS_KEY]: meetings, [OPENED_KEY]: opened });
 
   for (const alarm of await chrome.alarms.getAll()) {
-    if (alarm.name.startsWith(OPEN_ALARM_PREFIX)) await chrome.alarms.clear(alarm.name);
+    if (alarm.name.startsWith(OPEN_ALARM_PREFIX) || alarm.name === RESUME_ALARM) {
+      await chrome.alarms.clear(alarm.name);
+    }
+  }
+  const settings = await getSettings();
+  const pausedUntil = isPaused(settings, now) ? settings.pausedUntil : undefined;
+  if (pausedUntil !== undefined) {
+    // Meetings that are due when the pause ends still open, within the grace period.
+    await chrome.alarms.create(RESUME_ALARM, { when: pausedUntil });
   }
   for (const meeting of Object.values(meetings)) {
     if (meeting.key in opened) continue;
-    const when = openTime(meeting, now, LEAD_MS, GRACE_MS);
-    if (when !== undefined) {
+    const when = openTime(meeting, now, settings.leadMinutes * 60_000, GRACE_MS);
+    if (when !== undefined && (pausedUntil === undefined || when >= pausedUntil)) {
       await chrome.alarms.create(OPEN_ALARM_PREFIX + meeting.key, { when });
     }
   }
@@ -91,8 +100,11 @@ async function openMeeting(key: string): Promise<void> {
   const meeting = ((await load<Meetings>(MEETINGS_KEY)) ?? {})[key];
   const opened = (await load<Opened>(OPENED_KEY)) ?? {};
   if (meeting === undefined || key in opened) return;
+  const now = Date.now();
+  const settings = await getSettings();
+  if (isPaused(settings, now)) return;
   // The alarm may fire late, e.g. after the computer woke up from sleep.
-  if (openTime(meeting, Date.now(), LEAD_MS, GRACE_MS) === undefined) return;
+  if (openTime(meeting, now, settings.leadMinutes * 60_000, GRACE_MS) === undefined) return;
 
   opened[key] = meeting.start;
   await chrome.storage.local.set({ [OPENED_KEY]: opened });
@@ -106,7 +118,7 @@ async function openMeeting(key: string): Promise<void> {
 }
 
 export async function handleAlarm(alarm: chrome.alarms.Alarm): Promise<void> {
-  if (alarm.name === SYNC_ALARM) {
+  if (alarm.name === SYNC_ALARM || alarm.name === RESUME_ALARM) {
     await sync();
   } else if (alarm.name.startsWith(OPEN_ALARM_PREFIX)) {
     await openMeeting(alarm.name.slice(OPEN_ALARM_PREFIX.length));

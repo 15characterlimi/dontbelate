@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { handleAlarm, startSyncing, sync } from "./scheduler";
+import { SETTINGS_KEY } from "./settings";
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
@@ -19,7 +20,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && "accounts" in changes) void sync();
+  if (area === "local" && ("accounts" in changes || SETTINGS_KEY in changes)) void sync();
 });
 
 chrome.action.onClicked.addListener(() => {

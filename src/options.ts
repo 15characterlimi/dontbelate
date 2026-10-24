@@ -9,6 +9,7 @@ import {
   InteractionRequiredError,
   listAccounts,
 } from "./accounts";
+import { getSettings, isPaused, MAX_LEAD_MINUTES, SETTINGS_KEY, startOfNextDay, updateSettings } from "./settings";
 
 function element<T extends HTMLElement>(id: string): T {
   const e = document.getElementById(id);
@@ -20,6 +21,11 @@ const accountList = element<HTMLUListElement>("accounts");
 const noAccounts = element<HTMLParagraphElement>("no-accounts");
 const connectButton = element<HTMLButtonElement>("connect");
 const errorText = element<HTMLParagraphElement>("error");
+const leadInput = element<HTMLInputElement>("lead-minutes");
+const pauseStatus = element<HTMLParagraphElement>("pause-status");
+const pauseHourButton = element<HTMLButtonElement>("pause-hour");
+const pauseDayButton = element<HTMLButtonElement>("pause-day");
+const resumeButton = element<HTMLButtonElement>("resume");
 
 function showError(e: unknown): void {
   errorText.textContent = e instanceof Error ? e.message : String(e);
@@ -83,10 +89,53 @@ async function render(): Promise<void> {
   noAccounts.hidden = accounts.length > 0;
 }
 
+async function renderSettings(): Promise<void> {
+  const settings = await getSettings();
+  if (document.activeElement !== leadInput) leadInput.value = String(settings.leadMinutes);
+  const paused = isPaused(settings, Date.now());
+  if (paused && settings.pausedUntil !== undefined) {
+    const until = new Date(settings.pausedUntil).toLocaleString(undefined, {
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    pauseStatus.textContent = `Paused until ${until}. No meetings will be opened until then.`;
+    pauseStatus.className = "status warn";
+  } else {
+    pauseStatus.textContent = "Active.";
+    pauseStatus.className = "status ok";
+  }
+  resumeButton.hidden = !paused;
+}
+
 connectButton.addEventListener("click", () => void runAction(connectButton, () => connectAccount()));
 
+leadInput.max = String(MAX_LEAD_MINUTES);
+leadInput.addEventListener("change", () => {
+  if (leadInput.checkValidity()) {
+    void updateSettings({ leadMinutes: leadInput.valueAsNumber });
+  } else {
+    void renderSettings();
+  }
+});
+pauseHourButton.addEventListener("click", () =>
+  void runAction(pauseHourButton, () => updateSettings({ pausedUntil: Date.now() + 60 * 60_000 })),
+);
+pauseDayButton.addEventListener("click", () =>
+  void runAction(pauseDayButton, () => updateSettings({ pausedUntil: startOfNextDay(Date.now()) })),
+);
+resumeButton.addEventListener("click", () =>
+  void runAction(resumeButton, () => updateSettings({ pausedUntil: undefined })),
+);
+
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && "accounts" in changes) void render();
+  if (area !== "local") return;
+  if ("accounts" in changes) void render();
+  if (SETTINGS_KEY in changes) void renderSettings();
 });
 
+// Show "Active" again once a pause ends while the page is open.
+setInterval(() => void renderSettings(), 30_000);
+
 void render();
+void renderSettings();
