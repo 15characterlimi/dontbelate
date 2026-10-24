@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from "vitest";
-import { type CalendarEvent, getJoinUrl, openTime, selectMeetings, withAuthUser } from "./meetings";
+import { type CalendarEvent, getJoinUrl, meetTabPattern, openTime, selectMeetings, withAuthUser } from "./meetings";
 
 const MEET = "https://meet.google.com/abc-defg-hij";
 const START = "2026-10-24T10:00:00+02:00";
@@ -55,6 +55,17 @@ describe("withAuthUser", () => {
 
   it("leaves other links alone", () => {
     expect(withAuthUser("https://x.zoom.us/j/1", "a@example.com")).toBe("https://x.zoom.us/j/1");
+  });
+});
+
+describe("meetTabPattern", () => {
+  it("matches the meeting regardless of query parameters", () => {
+    expect(meetTabPattern(`${MEET}?authuser=a%40example.com`)).toBe(`${MEET}*`);
+  });
+
+  it("ignores other links", () => {
+    expect(meetTabPattern("https://x.zoom.us/j/1")).toBeUndefined();
+    expect(meetTabPattern("https://meet.google.com/lookup/abc")).toBeUndefined();
   });
 });
 

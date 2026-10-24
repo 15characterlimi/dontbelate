@@ -10,7 +10,7 @@
 import { InteractionRequiredError, listAccounts } from "./accounts";
 import { updateBadge } from "./badge";
 import { fetchEvents } from "./calendar";
-import { type Meeting, openTime, selectMeetings } from "./meetings";
+import { type Meeting, meetTabPattern, openTime, selectMeetings } from "./meetings";
 import { getSettings, isPaused } from "./settings";
 
 /** Meetings are still opened up to this long after they started. */
@@ -113,6 +113,17 @@ async function openMeeting(key: string): Promise<void> {
 
   opened[key] = meeting.start;
   await chrome.storage.local.set({ [OPENED_KEY]: opened });
+
+  // If the meeting is already open (e.g. joined early, or a recurring
+  // meeting's tab left open), bring that tab to the front instead.
+  const pattern = meetTabPattern(meeting.url);
+  const [existing] = pattern === undefined ? [] : await chrome.tabs.query({ url: pattern });
+  if (existing?.id !== undefined) {
+    await chrome.tabs.update(existing.id, { active: true });
+    await chrome.windows.update(existing.windowId, { focused: true });
+    return;
+  }
+
   try {
     const tab = await chrome.tabs.create({ url: meeting.url, active: true });
     await chrome.windows.update(tab.windowId, { focused: true });

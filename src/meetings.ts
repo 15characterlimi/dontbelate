@@ -57,6 +57,19 @@ export function withAuthUser(url: string, email: string): string {
   return parsed.toString();
 }
 
+/**
+ * A tabs.query() URL pattern matching tabs that show the same Google Meet
+ * meeting as `url`, regardless of query parameters. Undefined for other
+ * links, since the extension may only see the URLs of Meet tabs.
+ */
+export function meetTabPattern(url: string): string | undefined {
+  const parsed = new URL(url);
+  if (parsed.hostname !== "meet.google.com" || !/^\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/.test(parsed.pathname)) {
+    return undefined;
+  }
+  return `https://meet.google.com${parsed.pathname}*`;
+}
+
 /** Converts calendar events of the account `accountId`/`email` into meetings to open. */
 export function selectMeetings(events: CalendarEvent[], accountId: string, email: string): Meeting[] {
   const meetings: Meeting[] = [];
