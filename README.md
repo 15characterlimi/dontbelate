@@ -19,7 +19,7 @@ window comes to the front.
 - **No duplicate tabs:** if the meeting is already open in a tab, that tab is
   brought to the front instead (Google Meet only).
 - **Copes with sleep:** if the computer was asleep or Chrome wasn't running
-  at the scheduled time, the meeting still opens up to 5 minutes after it
+  at the scheduled time, the meeting still opens up to 6 minutes after it
   started.
 - **Settings:** lead time (0–10 minutes), and pausing for an hour or until
   tomorrow.

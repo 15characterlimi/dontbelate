@@ -13,11 +13,16 @@ import { fetchEvents } from "./calendar";
 import { type Meeting, meetTabPattern, openTime, selectMeetings } from "./meetings";
 import { getSettings, isPaused } from "./settings";
 
-/** Meetings are still opened up to this long after they started. */
-const GRACE_MS = 5 * 60_000;
+/** How often to re-fetch calendars, i.e. how late short-notice meetings may be noticed. */
+const SYNC_PERIOD_MINUTES = 5;
+/**
+ * Meetings are still opened up to this long after they started. Longer than
+ * the sync period, so that a meeting created just before it starts is found
+ * in time even if the sync alarm fires a little late.
+ */
+const GRACE_MS = (SYNC_PERIOD_MINUTES + 1) * 60_000;
 /** How far ahead to look for meetings on each sync. */
 const LOOKAHEAD_MS = 3 * 60 * 60_000;
-const SYNC_PERIOD_MINUTES = 5;
 /** Remember opened meetings for this long, so they don't open twice. */
 const OPENED_RETENTION_MS = 24 * 60 * 60_000;
 
