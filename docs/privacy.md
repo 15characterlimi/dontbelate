@@ -1,3 +1,7 @@
+---
+title: Privacy Policy
+---
+
 # Privacy Policy for Don't Be Late
 
 *Effective date: October 24, 2026*

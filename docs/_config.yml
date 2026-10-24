@@ -1,0 +1,4 @@
+# GitHub Pages (Jekyll) configuration for https://dontbelate.codepilot.org/
+# (custom domain set in CNAME).
+title: Don't Be Late
+description: Opens your Google Calendar meetings in a browser tab shortly before they start.

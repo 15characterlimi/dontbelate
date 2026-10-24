@@ -35,7 +35,8 @@ The extension only reads your calendar events. It requests read-only access
 to events (`calendar.events.readonly`) and your email address, to tell
 accounts apart. Calendar data is only stored in the browser and only sent to
 Google. Access tokens are kept in memory only. See the full
-[privacy policy](PRIVACY.md).
+[privacy policy](https://dontbelate.codepilot.org/privacy.html)
+([source](docs/privacy.md)).
 
 ## Installing from source
 
@@ -279,6 +280,7 @@ After rebuilding, click the reload icon on the extension's card in
 | `static/manifest.json` | Extension manifest |
 | `static/managed_schema.json` | Schema of the Chrome policy settings |
 | `assets/icon.svg` | Icon source |
+| `docs/` | Website and privacy policy, published with GitHub Pages |
 
 The icon PNGs in `static/icons/` are rendered from `assets/icon.svg`. After
 changing the SVG, regenerate them:
