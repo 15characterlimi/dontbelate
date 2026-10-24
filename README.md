@@ -34,7 +34,8 @@ land there.
 The extension only reads your calendar events. It requests read-only access
 to events (`calendar.events.readonly`) and your email address, to tell
 accounts apart. Calendar data is only stored in the browser and only sent to
-Google. Access tokens are kept in memory only.
+Google. Access tokens are kept in memory only. See the full
+[privacy policy](PRIVACY.md).
 
 ## Installing from source
 
@@ -87,7 +88,12 @@ redirect URI.
 npm run build      # bundle into dist/
 npm run watch      # rebuild on changes
 npm run check      # typecheck + unit tests
+npm run package    # check, then build release/dontbelate-<version>.zip
 ```
+
+`npm run package` builds without source maps and leaves the manifest's `key`
+out of the zip, because the Chrome Web Store doesn't accept it. The store
+signs the extension with the matching private key, so the ID stays the same.
 
 After rebuilding, click the reload icon on the extension's card in
 `chrome://extensions`. The service worker's console, reachable via the card's

@@ -3,12 +3,14 @@
 
 // Bundles the TypeScript sources and copies static files into dist/,
 // which is the directory to load as an unpacked extension.
-// Usage: node scripts/build.mjs [--watch]
+// Usage: node scripts/build.mjs [--watch | --release]
+//   --release: omit source maps (for packaging)
 
 import { cp, rm } from "node:fs/promises";
 import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
+const release = process.argv.includes("--release");
 
 await rm("dist", { recursive: true, force: true });
 await cp("static", "dist", { recursive: true });
@@ -19,7 +21,7 @@ const options = {
   bundle: true,
   format: "esm",
   target: "chrome120",
-  sourcemap: true,
+  sourcemap: !release,
   logLevel: "info",
 };
 

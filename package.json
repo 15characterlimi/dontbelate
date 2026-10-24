@@ -14,7 +14,8 @@
     "watch": "node scripts/build.mjs --watch",
     "typecheck": "node node_modules/typescript/bin/tsc",
     "test": "node node_modules/vitest/vitest.mjs run --passWithNoTests",
-    "check": "npm run typecheck && npm test"
+    "check": "npm run typecheck && npm test",
+    "package": "npm run check && node scripts/build.mjs --release && node scripts/package.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.6",
