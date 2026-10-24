@@ -73,6 +73,25 @@ replace that ID:
    `https://knehdcieoogihbpggambkjdofadnnpnp.chromiumapp.org/`.
 5. Put the client ID into `src/config.ts` and rebuild.
 
+### Optional: a second client for a Google Workspace organization
+
+An External consent screen shows an "unverified app" warning until Google
+verifies the app. To avoid that for the users of one Google Workspace
+organization, you can add a second OAuth client from a project that belongs
+to that organization, with an **Internal** consent screen. Internal apps
+need no verification, but only accounts of that organization can use them.
+
+1. Signed in with an account of the organization, create a project and
+   follow steps 2–4 above, choosing **Internal** as the audience.
+2. Copy [`config.local.example.json`](config.local.example.json) to
+   `config.local.json`, and fill in the domain and the new client ID. Git
+   ignores this file, so neither value ends up in the repository. Both are
+   still built into the extension.
+3. Rebuild. The settings page then offers "Connect a *domain* account",
+   which uses the Internal client and only lists that domain's accounts,
+   next to "Connect another Google account", which uses the client from
+   `src/config.ts`.
+
 The redirect URI is derived from the extension ID. The manifest's `key` is
 the public key of the extension's Chrome Web Store item, so an unpacked
 build has the same ID as the published extension,
@@ -106,6 +125,7 @@ After rebuilding, click the reload icon on the extension's card in
 | `src/meetings.ts` | Choosing meetings and their join links (pure, tested) |
 | `src/calendar.ts` | Google Calendar API requests |
 | `src/accounts.ts`, `src/oauth.ts` | Connecting accounts, OAuth tokens |
+| `src/config.ts` | OAuth clients and scopes |
 | `src/settings.ts`, `src/badge.ts` | Settings storage, toolbar badge |
 | `src/options.ts`, `static/options.*` | Settings page |
 | `static/manifest.json` | Extension manifest |

@@ -7,13 +7,15 @@
 // chrome.storage.session, i.e. in memory only; after a browser restart they
 // are silently re-obtained while the user is still signed in to Google.
 
-import { CALENDAR_SCOPE, OAUTH_CLIENT_ID, OAUTH_SCOPES } from "./config";
+import { CALENDAR_SCOPE, clientFor, DEFAULT_CLIENT, type OAuthClient, OAUTH_SCOPES } from "./config";
 import { type AccessToken, buildAuthUrl, isTokenFresh, OAuthError, parseAuthResponse } from "./oauth";
 
 export interface Account {
   /** Google's stable account ID (the OpenID "sub" claim). */
   id: string;
   email: string;
+  /** The OAuth client the account was connected with; absent for the default client. */
+  clientId?: string;
 }
 
 /** Thrown when a token can only be obtained by showing the Google sign-in UI. */
@@ -54,10 +56,11 @@ async function storeToken(accountId: string, token: AccessToken | undefined): Pr
 }
 
 /** Runs the OAuth flow; throws OAuthError or the error from launchWebAuthFlow. */
-async function authorize(interactive: boolean, loginHint?: string): Promise<AccessToken> {
+async function authorize(client: OAuthClient, interactive: boolean, loginHint?: string): Promise<AccessToken> {
   const state = crypto.randomUUID();
   const url = buildAuthUrl({
-    clientId: OAUTH_CLIENT_ID,
+    clientId: client.clientId,
+    hostedDomain: client.hostedDomain,
     redirectUri: chrome.identity.getRedirectURL(),
     scopes: OAUTH_SCOPES,
     state,
@@ -77,7 +80,7 @@ async function authorize(interactive: boolean, loginHint?: string): Promise<Acce
   return parseAuthResponse(responseUrl, state, [CALENDAR_SCOPE], Date.now());
 }
 
-async function fetchAccount(token: AccessToken): Promise<Account> {
+async function fetchAccount(token: AccessToken): Promise<{ id: string; email: string }> {
   const response = await fetch(USERINFO_ENDPOINT, {
     headers: { Authorization: `Bearer ${token.accessToken}` },
   });
@@ -92,17 +95,23 @@ async function fetchAccount(token: AccessToken): Promise<Account> {
 }
 
 /**
- * Lets the user pick a Google account and grant access, then adds it to the
- * connected accounts (or refreshes its token if it was already connected).
- * Must be called from a user gesture in an extension page.
+ * Lets the user pick a Google account and grant access through `client`,
+ * then adds it to the connected accounts (or refreshes its token if it was
+ * already connected). Must be called from a user gesture in an extension page.
  */
-export async function connectAccount(loginHint?: string): Promise<Account> {
-  const token = await authorize(true, loginHint);
-  const account = await fetchAccount(token);
+export async function connectAccount(client: OAuthClient = DEFAULT_CLIENT, loginHint?: string): Promise<Account> {
+  const token = await authorize(client, true, loginHint);
+  const account: Account = await fetchAccount(token);
+  if (client !== DEFAULT_CLIENT) account.clientId = client.clientId;
   const accounts = (await listAccounts()).filter((a) => a.id !== account.id);
   await saveAccounts([...accounts, account]);
   await storeToken(account.id, token);
   return account;
+}
+
+/** Signs in to `account` again interactively, e.g. after silent renewal failed. */
+export async function reconnectAccount(account: Account): Promise<Account> {
+  return connectAccount(clientFor(account.clientId), account.email);
 }
 
 const pendingRefreshes = new Map<string, Promise<string>>();
@@ -128,7 +137,7 @@ export async function getAccessToken(account: Account): Promise<string> {
 async function refreshToken(account: Account): Promise<string> {
   let token: AccessToken;
   try {
-    token = await authorize(false, account.email);
+    token = await authorize(clientFor(account.clientId), false, account.email);
   } catch (e) {
     console.warn(`Silent sign-in failed for ${account.email}:`, e);
     throw new InteractionRequiredError(account);

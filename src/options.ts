@@ -8,7 +8,9 @@ import {
   getAccessToken,
   InteractionRequiredError,
   listAccounts,
+  reconnectAccount,
 } from "./accounts";
+import { WORKSPACE_CLIENT } from "./config";
 import { getSettings, isPaused, MAX_LEAD_MINUTES, SETTINGS_KEY, startOfNextDay, updateSettings } from "./settings";
 
 function element<T extends HTMLElement>(id: string): T {
@@ -20,6 +22,7 @@ function element<T extends HTMLElement>(id: string): T {
 const accountList = element<HTMLUListElement>("accounts");
 const noAccounts = element<HTMLParagraphElement>("no-accounts");
 const connectButton = element<HTMLButtonElement>("connect");
+const connectWorkspaceButton = element<HTMLButtonElement>("connect-workspace");
 const errorText = element<HTMLParagraphElement>("error");
 const leadInput = element<HTMLInputElement>("lead-minutes");
 const pauseStatus = element<HTMLParagraphElement>("pause-status");
@@ -62,7 +65,7 @@ async function updateStatus(account: Account, status: HTMLElement, item: HTMLEle
     status.className = "status warn";
     if (e instanceof InteractionRequiredError) {
       status.textContent = "Sign-in required";
-      item.insertBefore(button("Sign in", () => connectAccount(account.email)), status.nextSibling);
+      item.insertBefore(button("Sign in", () => reconnectAccount(account)), status.nextSibling);
     } else {
       status.textContent = "Error";
       status.title = e instanceof Error ? e.message : String(e);
@@ -109,6 +112,15 @@ async function renderSettings(): Promise<void> {
 }
 
 connectButton.addEventListener("click", () => void runAction(connectButton, () => connectAccount()));
+if (WORKSPACE_CLIENT !== undefined) {
+  const client = WORKSPACE_CLIENT;
+  connectWorkspaceButton.textContent = `Connect a ${client.hostedDomain} account`;
+  connectWorkspaceButton.hidden = false;
+  connectWorkspaceButton.addEventListener("click", () =>
+    void runAction(connectWorkspaceButton, () => connectAccount(client)),
+  );
+  connectButton.textContent = "Connect another Google account";
+}
 
 leadInput.max = String(MAX_LEAD_MINUTES);
 leadInput.addEventListener("change", () => {

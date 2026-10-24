@@ -100,7 +100,7 @@ button {
   cursor: pointer;
 }
 
-button#connect {
+button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-fg);

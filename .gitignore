@@ -1,3 +1,5 @@
 node_modules/
 dist/
 release/
+# Local build configuration; see config.local.example.json.
+config.local.json

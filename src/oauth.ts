@@ -32,6 +32,8 @@ export interface AuthUrlParams {
   interactive: boolean;
   /** Email address of the account to pre-select or silently re-authorize. */
   loginHint?: string;
+  /** Only offer accounts of this Google Workspace domain. */
+  hostedDomain?: string;
 }
 
 export function buildAuthUrl(p: AuthUrlParams): string {
@@ -45,6 +47,9 @@ export function buildAuthUrl(p: AuthUrlParams): string {
   url.searchParams.set("prompt", p.interactive ? "select_account" : "none");
   if (p.loginHint !== undefined) {
     url.searchParams.set("login_hint", p.loginHint);
+  }
+  if (p.hostedDomain !== undefined) {
+    url.searchParams.set("hd", p.hostedDomain);
   }
   return url.toString();
 }

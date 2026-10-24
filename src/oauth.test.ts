@@ -32,6 +32,12 @@ describe("buildAuthUrl", () => {
     expect(url.searchParams.get("state")).toBe("s1");
     expect(url.searchParams.get("prompt")).toBe("select_account");
     expect(url.searchParams.has("login_hint")).toBe(false);
+    expect(url.searchParams.has("hd")).toBe(false);
+  });
+
+  it("restricts the account chooser to a Workspace domain", () => {
+    const url = new URL(buildAuthUrl({ ...base, interactive: true, hostedDomain: "example.com" }));
+    expect(url.searchParams.get("hd")).toBe("example.com");
   });
 
   it("builds a silent request for a specific account", () => {
