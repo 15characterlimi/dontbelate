@@ -14,13 +14,14 @@ import { type Meeting, meetTabPattern, openTime, selectMeetings } from "./meetin
 import { getSettings, isPaused } from "./settings";
 
 /** How often to re-fetch calendars, i.e. how late short-notice meetings may be noticed. */
-const SYNC_PERIOD_MINUTES = 5;
+export const SYNC_PERIOD_MINUTES = 5;
 /**
- * Meetings are still opened up to this long after they started. Longer than
- * the sync period, so that a meeting created just before it starts is found
- * in time even if the sync alarm fires a little late.
+ * Meetings are still opened up to this long after they started, e.g. after
+ * the computer woke up from sleep. Must be at least a minute longer than the
+ * sync period, so that a meeting created just before it starts is found in
+ * time even if the sync alarm fires a little late (see scheduler.test.ts).
  */
-const GRACE_MS = (SYNC_PERIOD_MINUTES + 1) * 60_000;
+export const GRACE_MS = 6 * 60_000;
 /** How far ahead to look for meetings on each sync. */
 const LOOKAHEAD_MS = 3 * 60 * 60_000;
 /** Remember opened meetings for this long, so they don't open twice. */
