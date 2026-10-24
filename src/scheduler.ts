@@ -7,7 +7,8 @@
 // The service worker can be stopped at any time, so all state lives in
 // chrome.storage and chrome.alarms rather than in variables.
 
-import { listAccounts } from "./accounts";
+import { InteractionRequiredError, listAccounts } from "./accounts";
+import { updateBadge } from "./badge";
 import { fetchEvents } from "./calendar";
 import { type Meeting, openTime, selectMeetings } from "./meetings";
 import { getSettings, isPaused } from "./settings";
@@ -55,7 +56,9 @@ async function doSync(): Promise<void> {
   const now = Date.now();
   const previous = (await load<Meetings>(MEETINGS_KEY)) ?? {};
   const meetings: Meetings = {};
-  for (const account of await listAccounts()) {
+  const accounts = await listAccounts();
+  const needsSignIn: string[] = [];
+  for (const account of accounts) {
     try {
       const events = await fetchEvents(account, now - GRACE_MS, now + LOOKAHEAD_MS);
       for (const meeting of selectMeetings(events, account.id, account.email)) {
@@ -64,6 +67,7 @@ async function doSync(): Promise<void> {
     } catch (e) {
       // E.g. offline or signed out: keep what we knew about this account's meetings.
       console.warn(`Syncing ${account.email} failed:`, e);
+      if (e instanceof InteractionRequiredError) needsSignIn.push(account.email);
       for (const [key, meeting] of Object.entries(previous)) {
         if (key.startsWith(`${account.id}/`)) meetings[key] = meeting;
       }
@@ -94,6 +98,7 @@ async function doSync(): Promise<void> {
       await chrome.alarms.create(OPEN_ALARM_PREFIX + meeting.key, { when });
     }
   }
+  await updateBadge({ accountCount: accounts.length, needsSignIn, pausedUntil });
 }
 
 async function openMeeting(key: string): Promise<void> {
