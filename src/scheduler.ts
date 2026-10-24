@@ -12,6 +12,7 @@ import { updateBadge } from "./badge";
 import { fetchEvents } from "./calendar";
 import { type Meeting, meetTabPattern, openTime, selectMeetings } from "./meetings";
 import { getSettings, isPaused } from "./settings";
+import { DAY_MS, HOUR_MS, MINUTE_MS } from "./time";
 
 /** How often to re-fetch calendars, i.e. how late short-notice meetings may be noticed. */
 export const SYNC_PERIOD_MINUTES = 5;
@@ -21,11 +22,11 @@ export const SYNC_PERIOD_MINUTES = 5;
  * sync period, so that a meeting created just before it starts is found in
  * time even if the sync alarm fires a little late (see scheduler.test.ts).
  */
-export const GRACE_MS = 6 * 60_000;
+export const GRACE_MS = 6 * MINUTE_MS;
 /** How far ahead to look for meetings on each sync. */
-const LOOKAHEAD_MS = 3 * 60 * 60_000;
+const LOOKAHEAD_MS = 3 * HOUR_MS;
 /** Remember opened meetings for this long, so they don't open twice. */
-const OPENED_RETENTION_MS = 24 * 60 * 60_000;
+const OPENED_RETENTION_MS = DAY_MS;
 
 const SYNC_ALARM = "sync";
 /** Fires when a pause ends. */
@@ -99,7 +100,7 @@ async function doSync(): Promise<void> {
   }
   for (const meeting of Object.values(meetings)) {
     if (meeting.key in opened) continue;
-    const when = openTime(meeting, now, settings.leadMinutes * 60_000, GRACE_MS);
+    const when = openTime(meeting, now, settings.leadMinutes * MINUTE_MS, GRACE_MS);
     if (when !== undefined && (pausedUntil === undefined || when >= pausedUntil)) {
       await chrome.alarms.create(OPEN_ALARM_PREFIX + meeting.key, { when });
     }
@@ -115,7 +116,7 @@ async function openMeeting(key: string): Promise<void> {
   const settings = await getSettings();
   if (isPaused(settings, now)) return;
   // The alarm may fire late, e.g. after the computer woke up from sleep.
-  if (openTime(meeting, now, settings.leadMinutes * 60_000, GRACE_MS) === undefined) return;
+  if (openTime(meeting, now, settings.leadMinutes * MINUTE_MS, GRACE_MS) === undefined) return;
 
   opened[key] = meeting.start;
   await chrome.storage.local.set({ [OPENED_KEY]: opened });

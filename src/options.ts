@@ -12,6 +12,7 @@ import {
 } from "./accounts";
 import { getWorkspaceClient } from "./config";
 import { getSettings, isPaused, MAX_LEAD_MINUTES, SETTINGS_KEY, startOfNextDay, updateSettings } from "./settings";
+import { HOUR_MS, SECOND_MS } from "./time";
 
 function element<T extends HTMLElement>(id: string): T {
   const e = document.getElementById(id);
@@ -132,7 +133,7 @@ leadInput.addEventListener("change", () => {
   }
 });
 pauseHourButton.addEventListener("click", () =>
-  void runAction(pauseHourButton, () => updateSettings({ pausedUntil: Date.now() + 60 * 60_000 })),
+  void runAction(pauseHourButton, () => updateSettings({ pausedUntil: Date.now() + HOUR_MS })),
 );
 pauseDayButton.addEventListener("click", () =>
   void runAction(pauseDayButton, () => updateSettings({ pausedUntil: startOfNextDay(Date.now()) })),
@@ -148,7 +149,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 // Show "Active" again once a pause ends while the page is open.
-setInterval(() => void renderSettings(), 30_000);
+setInterval(() => void renderSettings(), 30 * SECOND_MS);
 
 void render();
 void renderSettings();

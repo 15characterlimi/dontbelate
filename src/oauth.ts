@@ -4,6 +4,8 @@
 // Browser-independent parts of Google's OAuth 2.0 implicit flow
 // (https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow).
 
+import { MINUTE_MS, SECOND_MS } from "./time";
+
 export const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 
 export interface AccessToken {
@@ -93,10 +95,10 @@ export function parseAuthResponse(
     throw new OAuthError("scope_denied", `Required permissions were not granted: ${missing.join(", ")}`);
   }
 
-  return { accessToken, expiresAt: now + expiresIn * 1000 };
+  return { accessToken, expiresAt: now + expiresIn * SECOND_MS };
 }
 
 /** Whether `token` remains valid for at least `marginMs` after `now`. */
-export function isTokenFresh(token: AccessToken, now: number, marginMs = 5 * 60_000): boolean {
+export function isTokenFresh(token: AccessToken, now: number, marginMs = 5 * MINUTE_MS): boolean {
   return token.expiresAt - now >= marginMs;
 }

@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { type CalendarEvent, getJoinUrl, meetTabPattern, openTime, selectMeetings, withAuthUser } from "./meetings";
+import { HOUR_MS, MINUTE_MS, SECOND_MS } from "./time";
 
 const MEET = "https://meet.google.com/abc-defg-hij";
 const START = "2026-10-24T10:00:00+02:00";
@@ -99,18 +100,21 @@ describe("selectMeetings", () => {
 });
 
 describe("openTime", () => {
-  const meeting = { key: "k", title: "t", start: 100_000, url: MEET };
+  const start = 10 * HOUR_MS;
+  const meeting = { key: "k", title: "t", start, url: MEET };
+  const lead = MINUTE_MS;
+  const grace = 5 * MINUTE_MS;
 
   it("opens the lead time before the start", () => {
-    expect(openTime(meeting, 0, 60_000, 300_000)).toBe(40_000);
+    expect(openTime(meeting, start - HOUR_MS, lead, grace)).toBe(start - MINUTE_MS);
   });
 
   it("opens right away when already due", () => {
-    expect(openTime(meeting, 90_000, 60_000, 300_000)).toBe(90_000);
-    expect(openTime(meeting, 400_000, 60_000, 300_000)).toBe(400_000);
+    expect(openTime(meeting, start - 30 * SECOND_MS, lead, grace)).toBe(start - 30 * SECOND_MS);
+    expect(openTime(meeting, start + grace, lead, grace)).toBe(start + grace);
   });
 
   it("gives up once the grace period has passed", () => {
-    expect(openTime(meeting, 400_001, 60_000, 300_000)).toBeUndefined();
+    expect(openTime(meeting, start + grace + 1, lead, grace)).toBeUndefined();
   });
 });

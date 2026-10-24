@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { buildAuthUrl, isTokenFresh, OAuthError, parseAuthResponse } from "./oauth";
+import { MINUTE_MS, SECOND_MS } from "./time";
 
 const REDIRECT = "https://abc.chromiumapp.org/";
 const CAL = "https://www.googleapis.com/auth/calendar.events.readonly";
@@ -52,7 +53,7 @@ describe("parseAuthResponse", () => {
     const url = `${REDIRECT}#state=s1&access_token=tok&token_type=Bearer&expires_in=3599&scope=email%20openid%20${encodeURIComponent(CAL)}`;
     expect(parseAuthResponse(url, "s1", [CAL], NOW)).toEqual({
       accessToken: "tok",
-      expiresAt: NOW + 3_599_000,
+      expiresAt: NOW + 3599 * SECOND_MS,
     });
   });
 
@@ -85,9 +86,9 @@ describe("parseAuthResponse", () => {
 
 describe("isTokenFresh", () => {
   it("applies the safety margin", () => {
-    const token = { accessToken: "t", expiresAt: NOW + 10 * 60_000 };
+    const token = { accessToken: "t", expiresAt: NOW + 10 * MINUTE_MS };
     expect(isTokenFresh(token, NOW)).toBe(true);
-    expect(isTokenFresh(token, NOW + 5 * 60_000)).toBe(true);
-    expect(isTokenFresh(token, NOW + 5 * 60_000 + 1)).toBe(false);
+    expect(isTokenFresh(token, NOW + 5 * MINUTE_MS)).toBe(true);
+    expect(isTokenFresh(token, NOW + 5 * MINUTE_MS + 1)).toBe(false);
   });
 });

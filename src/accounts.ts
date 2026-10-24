@@ -9,6 +9,7 @@
 
 import { CALENDAR_SCOPE, DEFAULT_CLIENT, type OAuthClient, OAUTH_SCOPES } from "./config";
 import { type AccessToken, buildAuthUrl, isTokenFresh, OAuthError, parseAuthResponse } from "./oauth";
+import { SECOND_MS } from "./time";
 
 export interface Account {
   /** Google's stable account ID (the OpenID "sub" claim). */
@@ -77,7 +78,7 @@ async function authorize(client: OAuthClient, interactive: boolean, loginHint?: 
     interactive,
     // Give Google's sign-in page time to redirect when no UI may be shown.
     abortOnLoadForNonInteractive: false,
-    timeoutMsForNonInteractive: 15_000,
+    timeoutMsForNonInteractive: 15 * SECOND_MS,
   });
   if (responseUrl === undefined) {
     throw new OAuthError("no_response", "Sign-in did not complete");
