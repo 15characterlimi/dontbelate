@@ -1,0 +1,25 @@
+{
+  "name": "dontbelate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chrome extension that opens your Google Calendar meeting shortly before it starts.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/15characterlimi/dontbelate.git"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "node node_modules/typescript/bin/tsc",
+    "test": "node node_modules/vitest/vitest.mjs run --passWithNoTests",
+    "check": "npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
