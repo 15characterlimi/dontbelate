@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- Copyright 2026 Tobias Thierer
+     SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Don't Be Late – Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Don't Be Late</h1>
+      <section>
+        <h2>Google accounts</h2>
+        <p class="hint">Meetings from the calendars of these accounts open automatically shortly before they start.</p>
+        <ul id="accounts"></ul>
+        <p id="no-accounts" class="hint" hidden>No accounts connected yet.</p>
+        <button id="connect" type="button">Connect a Google account</button>
+        <p id="error" class="error" role="alert" hidden></p>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

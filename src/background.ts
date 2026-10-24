@@ -2,5 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
-  console.log(`Don't Be Late installed (reason: ${reason})`);
+  if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    void chrome.runtime.openOptionsPage();
+  }
+});
+
+chrome.action.onClicked.addListener(() => {
+  void chrome.runtime.openOptionsPage();
 });

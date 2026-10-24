@@ -14,7 +14,7 @@ await rm("dist", { recursive: true, force: true });
 await cp("static", "dist", { recursive: true });
 
 const options = {
-  entryPoints: ["src/background.ts"],
+  entryPoints: ["src/background.ts", "src/options.ts"],
   outdir: "dist",
   bundle: true,
   format: "esm",
