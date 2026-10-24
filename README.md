@@ -143,8 +143,7 @@ In the [Google Admin console](https://admin.google.com):
 1. Go to *Devices → Chrome → Apps & extensions → Users & browsers*, and
    select the organizational unit.
 2. Add the extension by its Web Store ID (or select it, if it's already
-   listed). Optionally set it to *Force install*, so users get it
-   automatically.
+   listed), and choose its installation policy (see below).
 3. In the extension's settings panel, enter the following under
    *Policy for extensions*, then save:
 
@@ -154,6 +153,29 @@ In the [Google Admin console](https://admin.google.com):
      "workspaceClientId": { "Value": "123456789012-abc….apps.googleusercontent.com" }
    }
    ```
+
+**Installation stays opt-in if the admin wants it to.** The configuration
+is set independently of the installation policy:
+
+| Installation policy | Effect |
+|---|---|
+| *Allow install* | Users may install the extension from the Web Store themselves. Those who do get the configuration immediately. |
+| *Force install* | Installed automatically for every user in the organizational unit. Users can't remove it. |
+| *Force install + pin to browser toolbar* | Like *Force install*, and the icon is pinned to the toolbar. |
+
+For either option, the extension must be available from somewhere the
+admin can point to: normally the Chrome Web Store, where an *Unlisted*
+listing is enough. Alternatively, admins can add a self-hosted extension by
+the URL of its update manifest; this repository doesn't provide one.
+
+**Policies only reach Chrome profiles that the organization manages.**
+That means the Chrome profile is signed in to Chrome with the Workspace
+account (for policies set under *Users & browsers*), or the computer is
+enrolled in the organization's Chrome browser management. A user who works
+in a personal Chrome profile, and only uses the Workspace account in a tab,
+doesn't receive the policy. They see only "Connect a Google account", which
+uses the default client. It still works if that client's consent screen
+admits them, but with the "unverified app" warning.
 
 Policies can take a while to reach browsers. To check, open
 `chrome://policy` in a user's browser. With *Show policies with no value
