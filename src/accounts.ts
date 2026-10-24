@@ -142,6 +142,11 @@ async function refreshToken(account: Account): Promise<string> {
   return token.accessToken;
 }
 
+/** Forgets the cached token for `account`, e.g. after an API call rejected it. */
+export async function invalidateAccessToken(account: Account): Promise<void> {
+  await storeToken(account.id, undefined);
+}
+
 /** Removes `account` and revokes the extension's access to it (best effort). */
 export async function disconnectAccount(account: Account): Promise<void> {
   const token = (await loadTokens())[account.id];

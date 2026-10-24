@@ -1,10 +1,25 @@
 // Copyright 2026 Tobias Thierer
 // SPDX-License-Identifier: Apache-2.0
 
+import { handleAlarm, startSyncing, sync } from "./scheduler";
+
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
     void chrome.runtime.openOptionsPage();
   }
+  void startSyncing();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  void startSyncing();
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  void handleAlarm(alarm);
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && "accounts" in changes) void sync();
 });
 
 chrome.action.onClicked.addListener(() => {
