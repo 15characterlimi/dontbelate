@@ -73,25 +73,6 @@ replace that ID:
    `https://knehdcieoogihbpggambkjdofadnnpnp.chromiumapp.org/`.
 5. Put the client ID into `src/config.ts` and rebuild.
 
-### Optional: a second client for a Google Workspace organization
-
-An External consent screen shows an "unverified app" warning until Google
-verifies the app. To avoid that for the users of one Google Workspace
-organization, you can add a second OAuth client from a project that belongs
-to that organization, with an **Internal** consent screen. Internal apps
-need no verification, but only accounts of that organization can use them.
-
-1. Signed in with an account of the organization, create a project and
-   follow steps 2–4 above, choosing **Internal** as the audience.
-2. Copy [`config.local.example.json`](config.local.example.json) to
-   `config.local.json`, and fill in the domain and the new client ID. Git
-   ignores this file, so neither value ends up in the repository. Both are
-   still built into the extension.
-3. Rebuild. The settings page then offers "Connect a *domain* account",
-   which uses the Internal client and only lists that domain's accounts,
-   next to "Connect another Google account", which uses the client from
-   `src/config.ts`.
-
 The redirect URI is derived from the extension ID. The manifest's `key` is
 the public key of the extension's Chrome Web Store item, so an unpacked
 build has the same ID as the published extension,
@@ -100,6 +81,151 @@ publish your own copy, replace the `key` with your store item's public key
 (Developer Dashboard → *Package* → *View public key*, without the
 `BEGIN`/`END` lines and line breaks), and use the resulting ID in the
 redirect URI.
+
+## Configuration
+
+### Default OAuth client
+
+The client ID in `DEFAULT_CLIENT` in [`src/config.ts`](src/config.ts) is
+built into every copy of the extension. It's used for the
+"Connect a Google account" button, and works for any Google account the
+consent screen admits: test users while the app is in *Testing* status,
+everyone once it's in production.
+
+### Google Workspace OAuth client (optional)
+
+An External consent screen shows an "unverified app" warning until Google
+verifies the app. To avoid that for the users of one Google Workspace
+organization, the extension can use a second OAuth client from a Google
+Cloud project that belongs to that organization and has an **Internal**
+consent screen. Internal apps need no verification, but only accounts of
+that organization can use them.
+
+To create this client, sign in to the Google Cloud console with an account
+of the organization, create a project, and follow steps 2–4 of the
+[Google Cloud setup](#google-cloud-setup), choosing **Internal** as the
+audience, with the same redirect URI.
+
+Once a Workspace client is configured, the settings page shows two
+buttons:
+
+| Button | OAuth client | Account chooser |
+|---|---|---|
+| Connect a *workspaceDomain* account | Workspace client | Only accounts of *workspaceDomain* (Google's `hd` parameter) |
+| Connect another Google account | Default client | All accounts |
+
+Each connected account remembers the client it was connected with, and
+renews its tokens through that client. Removing or changing the Workspace
+configuration later doesn't affect accounts that are already connected.
+Disconnect and reconnect them to switch clients.
+
+The Workspace client takes two settings. Neither is part of the source code
+or of the published package; they're supplied in one of two ways.
+
+| Setting | Type | Example | Meaning |
+|---|---|---|---|
+| `workspaceDomain` | string | `example.com` | Domain of the Workspace organization. Shown on the button and passed to Google as `hd`. |
+| `workspaceClientId` | string | `123…apps.googleusercontent.com` | Client ID of the Internal OAuth client (type *Web application*). |
+
+Both must be set and non-empty; if only one is, the extension ignores the
+setting and logs a warning in the service worker console.
+
+#### Through Chrome policy (published extension)
+
+This is the intended way: a Workspace admin sets the values for the
+organization's users only. Users outside the organization, including
+testers who install the same Web Store package, never receive them. The
+policy schema is in [`static/managed_schema.json`](static/managed_schema.json),
+and the extension reads the values from `chrome.storage.managed`.
+
+In the [Google Admin console](https://admin.google.com):
+
+1. Go to *Devices → Chrome → Apps & extensions → Users & browsers*, and
+   select the organizational unit.
+2. Add the extension by its Web Store ID (or select it, if it's already
+   listed). Optionally set it to *Force install*, so users get it
+   automatically.
+3. In the extension's settings panel, enter the following under
+   *Policy for extensions*, then save:
+
+   ```json
+   {
+     "workspaceDomain": { "Value": "example.com" },
+     "workspaceClientId": { "Value": "123456789012-abc….apps.googleusercontent.com" }
+   }
+   ```
+
+Policies can take a while to reach browsers. To check, open
+`chrome://policy` in a user's browser. With *Show policies with no value
+set* enabled, the extension's values appear under its ID. *Reload policies*
+fetches them immediately. The settings page reads the values when it
+opens, so reload it after a change.
+
+To try policy-based configuration on your own computer without the Admin
+console, set the policy locally for the extension's ID, then click
+*Reload policies* on `chrome://policy`:
+
+- **Windows** (Command Prompt):
+
+  ```bat
+  set KEY=HKCU\Software\Policies\Google\Chrome\3rdparty\extensions\knehdcieoogihbpggambkjdofadnnpnp\policy
+  reg add "%KEY%" /v workspaceDomain /t REG_SZ /d example.com /f
+  reg add "%KEY%" /v workspaceClientId /t REG_SZ /d 123456789012-abc....apps.googleusercontent.com /f
+  ```
+
+  Remove it again with `reg delete "%KEY%" /f`. If `chrome://policy`
+  doesn't list the values, use `HKLM` instead of `HKCU`, from a Command
+  Prompt run as administrator.
+
+- **Linux:** create `/etc/opt/chrome/policies/managed/dontbelate.json`
+  (`/etc/chromium/policies/managed/` for Chromium):
+
+  ```json
+  {
+    "3rdparty": {
+      "extensions": {
+        "knehdcieoogihbpggambkjdofadnnpnp": {
+          "workspaceDomain": "example.com",
+          "workspaceClientId": "123456789012-abc….apps.googleusercontent.com"
+        }
+      }
+    }
+  }
+  ```
+
+#### Through `config.local.json` (development builds only)
+
+For unpacked development builds, the values can also come from a
+`config.local.json` file in the project root. Copy
+[`config.local.example.json`](config.local.example.json) and fill it in:
+
+```json
+{
+  "workspace": {
+    "domain": "example.com",
+    "clientId": "123456789012-abc….apps.googleusercontent.com"
+  }
+}
+```
+
+- `npm run build` and `npm run watch` build the values into `dist/`, and
+  print `Using the Workspace OAuth client for <domain>`. Rebuild after
+  changing the file.
+- Git ignores the file, so the values stay out of the repository.
+- `npm run package` and `node scripts/build.mjs --release` **ignore** the
+  file, so the values can't end up in a published package.
+- If Chrome policy also sets both values, the policy takes precedence.
+
+### Who can see the Workspace domain
+
+| Who | Policy | `config.local.json` |
+|---|---|---|
+| Readers of the Git repository | No | No |
+| Users outside the organization who install the published extension | No | No (release builds ignore the file) |
+| Users who get the policy (the organization's users) | Yes, on the settings page | — |
+| Anyone you give a development build to | — | Yes |
+
+The client IDs don't reveal the domain to anyone except Google.
 
 ## Development
 
@@ -129,6 +255,7 @@ After rebuilding, click the reload icon on the extension's card in
 | `src/settings.ts`, `src/badge.ts` | Settings storage, toolbar badge |
 | `src/options.ts`, `static/options.*` | Settings page |
 | `static/manifest.json` | Extension manifest |
+| `static/managed_schema.json` | Schema of the Chrome policy settings |
 | `assets/icon.svg` | Icon source |
 
 The icon PNGs in `static/icons/` are rendered from `assets/icon.svg`. After

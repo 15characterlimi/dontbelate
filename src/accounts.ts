@@ -7,7 +7,7 @@
 // chrome.storage.session, i.e. in memory only; after a browser restart they
 // are silently re-obtained while the user is still signed in to Google.
 
-import { CALENDAR_SCOPE, clientFor, DEFAULT_CLIENT, type OAuthClient, OAUTH_SCOPES } from "./config";
+import { CALENDAR_SCOPE, DEFAULT_CLIENT, type OAuthClient, OAUTH_SCOPES } from "./config";
 import { type AccessToken, buildAuthUrl, isTokenFresh, OAuthError, parseAuthResponse } from "./oauth";
 
 export interface Account {
@@ -15,7 +15,12 @@ export interface Account {
   id: string;
   email: string;
   /** The OAuth client the account was connected with; absent for the default client. */
-  clientId?: string;
+  client?: OAuthClient;
+}
+
+/** The OAuth client to renew `account`'s tokens with. */
+function clientOf(account: Account): OAuthClient {
+  return account.client ?? DEFAULT_CLIENT;
 }
 
 /** Thrown when a token can only be obtained by showing the Google sign-in UI. */
@@ -102,7 +107,7 @@ async function fetchAccount(token: AccessToken): Promise<{ id: string; email: st
 export async function connectAccount(client: OAuthClient = DEFAULT_CLIENT, loginHint?: string): Promise<Account> {
   const token = await authorize(client, true, loginHint);
   const account: Account = await fetchAccount(token);
-  if (client !== DEFAULT_CLIENT) account.clientId = client.clientId;
+  if (client.clientId !== DEFAULT_CLIENT.clientId) account.client = client;
   const accounts = (await listAccounts()).filter((a) => a.id !== account.id);
   await saveAccounts([...accounts, account]);
   await storeToken(account.id, token);
@@ -111,7 +116,7 @@ export async function connectAccount(client: OAuthClient = DEFAULT_CLIENT, login
 
 /** Signs in to `account` again interactively, e.g. after silent renewal failed. */
 export async function reconnectAccount(account: Account): Promise<Account> {
-  return connectAccount(clientFor(account.clientId), account.email);
+  return connectAccount(clientOf(account), account.email);
 }
 
 const pendingRefreshes = new Map<string, Promise<string>>();
@@ -137,7 +142,7 @@ export async function getAccessToken(account: Account): Promise<string> {
 async function refreshToken(account: Account): Promise<string> {
   let token: AccessToken;
   try {
-    token = await authorize(clientFor(account.clientId), false, account.email);
+    token = await authorize(clientOf(account), false, account.email);
   } catch (e) {
     console.warn(`Silent sign-in failed for ${account.email}:`, e);
     throw new InteractionRequiredError(account);

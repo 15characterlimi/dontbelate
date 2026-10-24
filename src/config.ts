@@ -13,18 +13,30 @@ export const DEFAULT_CLIENT: OAuthClient = {
 };
 
 /**
- * Optional OAuth client with an Internal consent screen, for the accounts of
- * one Google Workspace organization. Configured in config.local.json, which
- * isn't checked in; see config.local.example.json.
+ * Returns the optional OAuth client with an Internal consent screen, for the
+ * accounts of one Google Workspace organization. It's configured by the
+ * organization's admin through Chrome policy (see static/managed_schema.json)
+ * or, in development builds only, in config.local.json. Neither value is
+ * part of the source code or of release builds.
  */
-export const WORKSPACE_CLIENT: OAuthClient | undefined =
-  __WORKSPACE_CLIENT__ === null
-    ? undefined
-    : { clientId: __WORKSPACE_CLIENT__.clientId, hostedDomain: __WORKSPACE_CLIENT__.domain };
-
-/** The client with ID `clientId`; the default client if it's unknown or undefined. */
-export function clientFor(clientId: string | undefined): OAuthClient {
-  return WORKSPACE_CLIENT !== undefined && clientId === WORKSPACE_CLIENT.clientId ? WORKSPACE_CLIENT : DEFAULT_CLIENT;
+export async function getWorkspaceClient(): Promise<OAuthClient | undefined> {
+  let policy: Record<string, unknown> = {};
+  try {
+    policy = await chrome.storage.managed.get(["workspaceDomain", "workspaceClientId"]);
+  } catch (e) {
+    console.warn("Reading managed storage failed:", e);
+  }
+  const { workspaceDomain: domain, workspaceClientId: clientId } = policy;
+  if (typeof domain === "string" && domain && typeof clientId === "string" && clientId) {
+    return { clientId, hostedDomain: domain };
+  }
+  if (domain !== undefined || clientId !== undefined) {
+    console.warn("Ignoring Workspace policy: workspaceDomain and workspaceClientId must both be set");
+  }
+  if (__WORKSPACE_CLIENT__ !== null) {
+    return { clientId: __WORKSPACE_CLIENT__.clientId, hostedDomain: __WORKSPACE_CLIENT__.domain };
+  }
+  return undefined;
 }
 
 export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events.readonly";

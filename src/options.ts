@@ -10,7 +10,7 @@ import {
   listAccounts,
   reconnectAccount,
 } from "./accounts";
-import { WORKSPACE_CLIENT } from "./config";
+import { getWorkspaceClient } from "./config";
 import { getSettings, isPaused, MAX_LEAD_MINUTES, SETTINGS_KEY, startOfNextDay, updateSettings } from "./settings";
 
 function element<T extends HTMLElement>(id: string): T {
@@ -112,8 +112,9 @@ async function renderSettings(): Promise<void> {
 }
 
 connectButton.addEventListener("click", () => void runAction(connectButton, () => connectAccount()));
-if (WORKSPACE_CLIENT !== undefined) {
-  const client = WORKSPACE_CLIENT;
+const workspaceClient = await getWorkspaceClient();
+if (workspaceClient !== undefined) {
+  const client = workspaceClient;
   connectWorkspaceButton.textContent = `Connect a ${client.hostedDomain} account`;
   connectWorkspaceButton.hidden = false;
   connectWorkspaceButton.addEventListener("click", () =>

@@ -6,7 +6,9 @@
 // Usage: node scripts/build.mjs [--watch | --release]
 //   --release: omit source maps (for packaging)
 //
-// Reads optional settings from config.local.json; see config.local.example.json.
+// Development builds read optional settings from config.local.json (see
+// config.local.example.json). Release builds ignore that file, so that its
+// values can't end up in a published package.
 
 import { cp, readFile, rm } from "node:fs/promises";
 import * as esbuild from "esbuild";
@@ -14,7 +16,7 @@ import * as esbuild from "esbuild";
 const watch = process.argv.includes("--watch");
 const release = process.argv.includes("--release");
 
-const workspace = await readWorkspaceConfig();
+const workspace = release ? undefined : await readWorkspaceConfig();
 
 await rm("dist", { recursive: true, force: true });
 await cp("static", "dist", { recursive: true });

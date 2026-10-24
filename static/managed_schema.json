@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "workspaceDomain": {
+      "title": "Google Workspace domain",
+      "description": "Domain of the Google Workspace organization that owns the Internal OAuth client, e.g. example.com. Shown on the settings page and used to limit Google's account chooser to this domain. Requires workspaceClientId.",
+      "type": "string"
+    },
+    "workspaceClientId": {
+      "title": "Google Workspace OAuth client ID",
+      "description": "Client ID of an OAuth client of type 'Web application' in a Google Cloud project with an Internal consent screen. Requires workspaceDomain.",
+      "type": "string"
+    }
+  }
+}
