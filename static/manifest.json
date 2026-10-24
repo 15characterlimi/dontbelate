@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Opens your Google Calendar meeting's waiting room shortly before it starts.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwxVAEGnFnpu49oMHViWz6t+WW0YJrfh0Czicg6zGr4Flr/LXm4lCKl1WkNjCDH2tdF3LMXDL3qGvoACR4N1DhauzgoIdqKKGs3QqYuBQelmzXNyDnTdHNb89YuoP40igkYeNF+nExMFwU1TQbceDF3p9nA8snWxpOZFtozEcirFwfaXwqzpFV1fmihSBXwWO6VzdACViNR4LUC0YsjX46d8g2dXFXY0W8ce9GW6tSYeNLZrF4PBb77lyFg3ffG13ZRzcUB6veD8Tj9iTo/7DHj9rHGDHuRvt1pI9RTOeVdEjc7rSHPj6g00ZfZ7P/c9toY8z1HB9RoZkE+n8ZGMD4wIDAQAB",
-  "minimum_chrome_version": "120",
+  "minimum_chrome_version": "150",
   "permissions": ["alarms", "identity", "storage"],
   "host_permissions": ["https://meet.google.com/*"],
   "storage": {

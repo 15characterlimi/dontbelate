@@ -26,7 +26,7 @@ const options = {
   outdir: "dist",
   bundle: true,
   format: "esm",
-  target: "chrome120",
+  target: "chrome150",
   sourcemap: !release,
   logLevel: "info",
   define: { __WORKSPACE_CLIENT__: JSON.stringify(workspace ?? null) },

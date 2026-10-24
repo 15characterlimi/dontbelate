@@ -39,7 +39,7 @@ Google. Access tokens are kept in memory only. See the full
 
 ## Installing from source
 
-Requires Node.js 20 or newer.
+Requires Node.js 26 or newer.
 
 ```sh
 npm install
