@@ -24,6 +24,22 @@
         <p id="error" class="error" role="alert" hidden></p>
       </section>
       <section>
+        <h2>Behavior</h2>
+        <p>
+          <label>
+            Open meetings
+            <input id="lead-minutes" type="number" min="0" max="10" step="1" required />
+            minute(s) before they start
+          </label>
+        </p>
+        <p id="pause-status" class="status"></p>
+        <p class="buttons">
+          <button id="pause-hour" type="button">Pause for 1 hour</button>
+          <button id="pause-day" type="button">Pause until tomorrow</button>
+          <button id="resume" type="button">Resume</button>
+        </p>
+      </section>
+      <section>
         <h2>Which meetings open</h2>
         <p class="hint">An event opens if all of these apply:</p>
         <ul class="conditions">
@@ -66,22 +82,6 @@
             <textarea id="ignored-titles" rows="3" spellcheck="false" placeholder="OOO&#10;Lunch"></textarea>
           </li>
         </ul>
-      </section>
-      <section>
-        <h2>Behavior</h2>
-        <p>
-          <label>
-            Open meetings
-            <input id="lead-minutes" type="number" min="0" max="10" step="1" required />
-            minute(s) before they start
-          </label>
-        </p>
-        <p id="pause-status" class="status"></p>
-        <p class="buttons">
-          <button id="pause-hour" type="button">Pause for 1 hour</button>
-          <button id="pause-day" type="button">Pause until tomorrow</button>
-          <button id="resume" type="button">Resume</button>
-        </p>
       </section>
     </main>
     <script type="module" src="options.js"></script>
