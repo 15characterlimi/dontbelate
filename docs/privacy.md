@@ -4,7 +4,7 @@ title: Privacy Policy
 
 # Privacy Policy for Don't Be Late
 
-*Effective date: October 24, 2026*
+*Effective date: October 25, 2026*
 
 Don't Be Late ("the extension") is a Chrome extension that opens your
 Google Calendar meetings in a browser tab shortly before they start. This
@@ -26,7 +26,7 @@ access through Google's OAuth consent screen:
 
 | Google permission | What the extension uses it for |
 |---|---|
-| View events on all your calendars (`calendar.events.readonly`) | Reading upcoming events on your primary calendar: start time, title, status, your response, and video meeting links (Google Meet, Zoom, Microsoft Teams) |
+| See the events on Google calendars you own (`calendar.events.owned.readonly`) | Reading upcoming events on your primary calendar: start time, title, status, your response, and video meeting links (Google Meet, Zoom, Microsoft Teams) |
 | See your primary email address (`email`, `openid`) | Telling connected accounts apart, and opening Google Meet with the matching account |
 
 The extension can't create, change or delete calendar events, and it doesn't

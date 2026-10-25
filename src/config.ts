@@ -39,7 +39,12 @@ export async function getWorkspaceClient(): Promise<OAuthClient | undefined> {
   return undefined;
 }
 
-export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events.readonly";
+/**
+ * Read-only access to events on calendars the user owns, which includes the
+ * primary calendar that meeting invitations land on. Narrower than
+ * calendar.events.readonly, which also covers other people's calendars.
+ */
+export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events.owned.readonly";
 
 /** "openid" and "email" identify which account a token belongs to. */
 export const OAUTH_SCOPES = ["openid", "email", CALENDAR_SCOPE];

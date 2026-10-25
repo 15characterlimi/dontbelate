@@ -6,7 +6,7 @@ import { buildAuthUrl, isTokenFresh, OAuthError, parseAuthResponse } from "./oau
 import { MINUTE_MS, SECOND_MS } from "./time";
 
 const REDIRECT = "https://abc.chromiumapp.org/";
-const CAL = "https://www.googleapis.com/auth/calendar.events.readonly";
+const CAL = "https://www.googleapis.com/auth/calendar.events.owned.readonly";
 const SCOPES = ["openid", "email", CAL];
 const NOW = 1_000_000;
 

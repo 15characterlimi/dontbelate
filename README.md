@@ -32,8 +32,8 @@ land there.
 ## Privacy
 
 The extension only reads your calendar events. It requests read-only access
-to events (`calendar.events.readonly`) and your email address, to tell
-accounts apart. Calendar data is only stored in the browser and only sent to
+to events on calendars you own (`calendar.events.owned.readonly`) and your
+email address, to tell accounts apart. Calendar data is only stored in the browser and only sent to
 Google. Access tokens are kept in memory only. See the full
 [privacy policy](https://dontbelate.codepilot.org/privacy.html)
 ([source](docs/privacy.md)).
@@ -66,7 +66,7 @@ replace that ID:
    - Audience: **External**. Choose *Internal* instead only if every user
      belongs to your Google Workspace organization.
    - Data access: add the scope
-     `https://www.googleapis.com/auth/calendar.events.readonly`.
+     `https://www.googleapis.com/auth/calendar.events.owned.readonly`.
    - While the app is in *Testing* status, add every account that should
      be able to connect as a **test user**.
 4. Under *Clients*, create an OAuth client of type **Web application** (not
