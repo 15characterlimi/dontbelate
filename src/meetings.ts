@@ -27,9 +27,24 @@ export interface Meeting {
   url: string;
 }
 
-/** Video meeting links found in event locations or descriptions. */
+/**
+ * Video meeting links found in event locations or descriptions: Google Meet;
+ * Zoom meeting IDs and personal meeting rooms, with or without a subdomain
+ * such as us02web.; Teams links in both the long meetup-join and the short
+ * /meet/<ID> format.
+ */
 const MEETING_URL_PATTERN =
-  /https:\/\/(?:meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}|[\w-]+\.zoom\.us\/[jw]\/\d+|teams\.microsoft\.com\/l\/meetup-join\/|teams\.live\.com\/meet\/)[^\s"'<>]*/i;
+  /https:\/\/(?:meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}|(?:[\w-]+\.)?zoom\.us\/(?:[jw]\/\d+|my\/[\w.-]+)|teams\.microsoft\.com\/(?:l\/meetup-join\/|meet\/\d+)|teams\.live\.com\/meet\/)[^\s"'<>]*/i;
+
+/** Which events to open, beyond the rules that always apply. */
+export interface MeetingFilter {
+  /** Open events that the user responded "Maybe" to. */
+  openMaybe: boolean;
+  /** Open events that the user hasn't responded to yet. */
+  openNotResponded: boolean;
+  /** Skip events whose title contains any of these, ignoring case. */
+  ignoredTitles: string[];
+}
 
 /** Event types that never represent meetings. */
 const NON_MEETING_EVENT_TYPES = new Set(["workingLocation", "outOfOffice", "focusTime", "birthday"]);
@@ -70,8 +85,33 @@ export function meetTabPattern(url: string): string | undefined {
   return `https://meet.google.com${parsed.pathname}*`;
 }
 
+/** Whether the user's response to `event` allows opening it. */
+function responseAllows(event: CalendarEvent, filter: MeetingFilter): boolean {
+  // Events without guests have no attendees, and count as accepted.
+  switch (event.attendees?.find((a) => a.self)?.responseStatus) {
+    case "declined":
+      return false;
+    case "tentative":
+      return filter.openMaybe;
+    case "needsAction":
+      return filter.openNotResponded;
+    default:
+      return true;
+  }
+}
+
+function hasIgnoredTitle(event: CalendarEvent, filter: MeetingFilter): boolean {
+  const title = (event.summary ?? "").toLocaleLowerCase();
+  return filter.ignoredTitles.some((ignored) => title.includes(ignored.toLocaleLowerCase()));
+}
+
 /** Converts calendar events of the account `accountId`/`email` into meetings to open. */
-export function selectMeetings(events: CalendarEvent[], accountId: string, email: string): Meeting[] {
+export function selectMeetings(
+  events: CalendarEvent[],
+  accountId: string,
+  email: string,
+  filter: MeetingFilter,
+): Meeting[] {
   const meetings: Meeting[] = [];
   for (const event of events) {
     if (event.status === "cancelled") continue;
@@ -81,8 +121,7 @@ export function selectMeetings(events: CalendarEvent[], accountId: string, email
     if (startTime === undefined) continue;
     const start = Date.parse(startTime);
     if (Number.isNaN(start)) continue;
-    const self = event.attendees?.find((a) => a.self);
-    if (self?.responseStatus === "declined") continue;
+    if (!responseAllows(event, filter) || hasIgnoredTitle(event, filter)) continue;
     const url = getJoinUrl(event);
     if (url === undefined) continue;
     meetings.push({

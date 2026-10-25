@@ -24,6 +24,50 @@
         <p id="error" class="error" role="alert" hidden></p>
       </section>
       <section>
+        <h2>Which meetings open</h2>
+        <p class="hint">An event opens if all of these apply:</p>
+        <ul class="conditions">
+          <li>It's on the primary calendar of a connected account. Other calendars, including ones you follow, aren't checked.</li>
+          <li>
+            It has a Google Meet, Zoom or Microsoft Teams link: as its video call, or in its location or
+            description, checked in this order. Only the first link found opens.
+          </li>
+          <li>It starts at a set time. All-day events don't open.</li>
+          <li>It isn't cancelled, and isn't an out-of-office, focus time, working location or birthday event.</li>
+          <li>
+            Your response allows it:
+            <table class="responses">
+              <thead>
+                <tr><th scope="col">Your response</th><th scope="col">Opens</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Yes, or your own event without guests</th>
+                  <td><input type="checkbox" checked disabled aria-label="Opens: always" /></td>
+                </tr>
+                <tr>
+                  <th scope="row"><label for="open-maybe">Maybe</label></th>
+                  <td><input id="open-maybe" type="checkbox" /></td>
+                </tr>
+                <tr>
+                  <th scope="row"><label for="open-not-responded">Not responded</label></th>
+                  <td><input id="open-not-responded" type="checkbox" /></td>
+                </tr>
+                <tr>
+                  <th scope="row">No</th>
+                  <td><input type="checkbox" disabled aria-label="Opens: never" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </li>
+          <li>
+            <label for="ignored-titles">Its title doesn't contain any of these texts</label>
+            <span class="hint">(one per line; upper and lower case don't matter):</span>
+            <textarea id="ignored-titles" rows="3" spellcheck="false" placeholder="OOO&#10;Lunch"></textarea>
+          </li>
+        </ul>
+      </section>
+      <section>
         <h2>Behavior</h2>
         <p>
           <label>

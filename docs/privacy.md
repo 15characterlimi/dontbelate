@@ -50,8 +50,8 @@ of those pages.
 - **Access tokens:** the short-lived OAuth access tokens issued by Google are
   kept in Chrome's in-memory session storage only, and are discarded when the
   browser closes.
-- **Settings:** your lead time and pause settings are stored in local
-  extension storage.
+- **Settings:** your settings, such as the lead time, which meetings to
+  open and title texts to ignore, are stored in local extension storage.
 
 The extension sends data only to Google, as part of signing in and making
 Google Calendar API requests. The developer doesn't operate any server and

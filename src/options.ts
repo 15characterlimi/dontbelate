@@ -11,7 +11,15 @@ import {
   reconnectAccount,
 } from "./accounts";
 import { getWorkspaceClient } from "./config";
-import { getSettings, isPaused, MAX_LEAD_MINUTES, SETTINGS_KEY, startOfNextDay, updateSettings } from "./settings";
+import {
+  getSettings,
+  isPaused,
+  MAX_LEAD_MINUTES,
+  normalizeTitles,
+  SETTINGS_KEY,
+  startOfNextDay,
+  updateSettings,
+} from "./settings";
 import { HOUR_MS, SECOND_MS } from "./time";
 
 function element<T extends HTMLElement>(id: string): T {
@@ -25,6 +33,9 @@ const noAccounts = element<HTMLParagraphElement>("no-accounts");
 const connectButton = element<HTMLButtonElement>("connect");
 const connectWorkspaceButton = element<HTMLButtonElement>("connect-workspace");
 const errorText = element<HTMLParagraphElement>("error");
+const openMaybeInput = element<HTMLInputElement>("open-maybe");
+const openNotRespondedInput = element<HTMLInputElement>("open-not-responded");
+const ignoredTitlesInput = element<HTMLTextAreaElement>("ignored-titles");
 const leadInput = element<HTMLInputElement>("lead-minutes");
 const pauseStatus = element<HTMLParagraphElement>("pause-status");
 const pauseHourButton = element<HTMLButtonElement>("pause-hour");
@@ -95,6 +106,9 @@ async function render(): Promise<void> {
 
 async function renderSettings(): Promise<void> {
   const settings = await getSettings();
+  openMaybeInput.checked = settings.openMaybe;
+  openNotRespondedInput.checked = settings.openNotResponded;
+  if (document.activeElement !== ignoredTitlesInput) ignoredTitlesInput.value = settings.ignoredTitles.join("\n");
   if (document.activeElement !== leadInput) leadInput.value = String(settings.leadMinutes);
   const paused = isPaused(settings, Date.now());
   if (paused && settings.pausedUntil !== undefined) {
@@ -123,6 +137,16 @@ if (workspaceClient !== undefined) {
   );
   connectButton.textContent = "Connect another Google account";
 }
+
+openMaybeInput.addEventListener("change", () => void updateSettings({ openMaybe: openMaybeInput.checked }));
+openNotRespondedInput.addEventListener("change", () =>
+  void updateSettings({ openNotResponded: openNotRespondedInput.checked }),
+);
+// Saved when the text area loses focus, so that a sync doesn't run on every keystroke.
+ignoredTitlesInput.addEventListener("change", () => {
+  void updateSettings({ ignoredTitles: normalizeTitles(ignoredTitlesInput.value.split("\n")) });
+});
+ignoredTitlesInput.addEventListener("blur", () => void renderSettings());
 
 leadInput.max = String(MAX_LEAD_MINUTES);
 leadInput.addEventListener("change", () => {

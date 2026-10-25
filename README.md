@@ -12,8 +12,7 @@ window comes to the front.
 - **Any number of Google accounts**, both personal and Google Workspace,
   independent of which account is signed in to Chrome.
 - **Picks the right meetings:** events with a Meet, Zoom or Teams link that
-  you haven't declined. All-day, out-of-office and focus-time events are
-  skipped.
+  you haven't declined; see [Which meetings open](#which-meetings-open).
 - **Joins with the right account:** Meet links open with the account whose
   calendar the meeting is on.
 - **No duplicate tabs:** if the meeting is already open in a tab, that tab is
@@ -21,13 +20,50 @@ window comes to the front.
 - **Copes with sleep:** if the computer was asleep or Chrome wasn't running
   at the scheduled time, the meeting still opens up to 6 minutes after it
   started.
-- **Settings:** lead time (0–10 minutes), and pausing for an hour or until
-  tomorrow.
+- **Settings:** lead time (0–10 minutes), whether Maybe and Not responded
+  events open, titles to ignore, and pausing for an hour or until tomorrow.
 - **Toolbar badge:** a red **!** when no account is connected or an account
   needs to sign in again, and **off** while paused.
 
-Only each account's primary calendar is checked. Meeting invitations always
-land there.
+## Which meetings open
+
+An event opens if all of these apply. The settings page shows the same list.
+
+- It's on the **primary calendar** of a connected account. Meeting
+  invitations land there. Other calendars, including secondary calendars
+  and calendars you follow, aren't checked.
+- It has a **video meeting link**. The extension looks in this order and
+  opens only the first link it finds:
+  1. the event's video call (Google Meet, or a Zoom or Teams Calendar
+     add-on);
+  2. its location;
+  3. its description; the first matching link in the text wins.
+
+  The title isn't searched. In the location and description, these links
+  count:
+
+  | Service | Link formats |
+  |---|---|
+  | Google Meet | `https://meet.google.com/abc-defg-hij` |
+  | Zoom | `https://zoom.us/j/<ID>`, `/w/<ID>`, `/my/<name>`, also with a subdomain such as `us02web.zoom.us` |
+  | Microsoft Teams | `https://teams.microsoft.com/l/meetup-join/…`, `https://teams.microsoft.com/meet/<ID>…`, `https://teams.live.com/meet/…` |
+- It **starts at a set time**: all-day events don't open.
+- It isn't **cancelled**, and isn't an out-of-office, focus time, working
+  location or birthday event.
+- Your **response** allows it:
+
+  | Your response | Opens |
+  |---|---|
+  | Yes, or your own event without guests | Always |
+  | Maybe | Setting, on by default |
+  | Not responded | Setting, on by default |
+  | No | Never |
+- Its **title** doesn't contain any of the texts listed in the settings,
+  ignoring upper and lower case. The list is empty by default. For example,
+  `OOO` skips "Jane OOO" and "ooo until Monday".
+
+Settings changes take effect immediately, also for meetings that were
+already scheduled.
 
 ## Privacy
 

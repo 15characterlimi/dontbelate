@@ -1,7 +1,9 @@
 // Copyright 2026 Tobias Thierer
 // SPDX-License-Identifier: Apache-2.0
 
-export interface Settings {
+import type { MeetingFilter } from "./meetings";
+
+export interface Settings extends MeetingFilter {
   /** How many minutes before a meeting's start to open it. */
   leadMinutes: number;
   /** While paused, no meetings are opened. Milliseconds since the epoch. */
@@ -17,9 +19,24 @@ export function normalizeSettings(stored: Partial<Settings> | undefined): Settin
   const lead = Math.round(Number(stored?.leadMinutes ?? DEFAULT_LEAD_MINUTES));
   const settings: Settings = {
     leadMinutes: Number.isFinite(lead) ? Math.min(Math.max(lead, 0), MAX_LEAD_MINUTES) : DEFAULT_LEAD_MINUTES,
+    openMaybe: stored?.openMaybe !== false,
+    openNotResponded: stored?.openNotResponded !== false,
+    ignoredTitles: normalizeTitles(Array.isArray(stored?.ignoredTitles) ? stored.ignoredTitles : []),
   };
   if (typeof stored?.pausedUntil === "number") settings.pausedUntil = stored.pausedUntil;
   return settings;
+}
+
+/** Trims title filters, and drops empty and duplicate ones. */
+export function normalizeTitles(titles: unknown[]): string[] {
+  const result: string[] = [];
+  for (const title of titles) {
+    const trimmed = String(title).trim();
+    if (trimmed !== "" && !result.some((t) => t.toLocaleLowerCase() === trimmed.toLocaleLowerCase())) {
+      result.push(trimmed);
+    }
+  }
+  return result;
 }
 
 export function isPaused(settings: Settings, now: number): boolean {

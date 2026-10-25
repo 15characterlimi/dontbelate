@@ -64,11 +64,12 @@ async function doSync(): Promise<void> {
   const previous = (await load<Meetings>(MEETINGS_KEY)) ?? {};
   const meetings: Meetings = {};
   const accounts = await listAccounts();
+  const settings = await getSettings();
   const needsSignIn: string[] = [];
   for (const account of accounts) {
     try {
       const events = await fetchEvents(account, now - GRACE_MS, now + LOOKAHEAD_MS);
-      for (const meeting of selectMeetings(events, account.id, account.email)) {
+      for (const meeting of selectMeetings(events, account.id, account.email, settings)) {
         meetings[meeting.key] = meeting;
       }
     } catch (e) {
@@ -92,7 +93,6 @@ async function doSync(): Promise<void> {
       await chrome.alarms.clear(alarm.name);
     }
   }
-  const settings = await getSettings();
   const pausedUntil = isPaused(settings, now) ? settings.pausedUntil : undefined;
   if (pausedUntil !== undefined) {
     // Meetings that are due when the pause ends still open, within the grace period.

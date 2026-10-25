@@ -2,15 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from "vitest";
-import { isPaused, normalizeSettings, startOfNextDay } from "./settings";
+import { isPaused, normalizeSettings, normalizeTitles, type Settings, startOfNextDay } from "./settings";
+
+const DEFAULTS: Settings = { leadMinutes: 1, openMaybe: true, openNotResponded: true, ignoredTitles: [] };
 
 describe("normalizeSettings", () => {
   it("uses defaults when nothing is stored", () => {
-    expect(normalizeSettings(undefined)).toEqual({ leadMinutes: 1 });
+    expect(normalizeSettings(undefined)).toEqual(DEFAULTS);
   });
 
   it("keeps valid values", () => {
-    expect(normalizeSettings({ leadMinutes: 3, pausedUntil: 42 })).toEqual({ leadMinutes: 3, pausedUntil: 42 });
+    const settings: Settings = {
+      leadMinutes: 3,
+      pausedUntil: 42,
+      openMaybe: false,
+      openNotResponded: false,
+      ignoredTitles: ["OOO"],
+    };
+    expect(normalizeSettings(settings)).toEqual(settings);
   });
 
   it("clamps and rounds the lead time", () => {
@@ -21,15 +30,21 @@ describe("normalizeSettings", () => {
   });
 
   it("drops a missing pause", () => {
-    expect(normalizeSettings({ leadMinutes: 2, pausedUntil: undefined })).toEqual({ leadMinutes: 2 });
+    expect(normalizeSettings({ leadMinutes: 2, pausedUntil: undefined })).toEqual({ ...DEFAULTS, leadMinutes: 2 });
+  });
+});
+
+describe("normalizeTitles", () => {
+  it("trims, and drops empty and duplicate entries", () => {
+    expect(normalizeTitles([" OOO ", "", "  ", "ooo", "Out of office"])).toEqual(["OOO", "Out of office"]);
   });
 });
 
 describe("isPaused", () => {
   it("is paused only before pausedUntil", () => {
-    expect(isPaused({ leadMinutes: 1 }, 100)).toBe(false);
-    expect(isPaused({ leadMinutes: 1, pausedUntil: 200 }, 100)).toBe(true);
-    expect(isPaused({ leadMinutes: 1, pausedUntil: 200 }, 200)).toBe(false);
+    expect(isPaused(DEFAULTS, 100)).toBe(false);
+    expect(isPaused({ ...DEFAULTS, pausedUntil: 200 }, 100)).toBe(true);
+    expect(isPaused({ ...DEFAULTS, pausedUntil: 200 }, 200)).toBe(false);
   });
 });
 
