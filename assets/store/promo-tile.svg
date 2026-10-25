@@ -1,0 +1,19 @@
+<!-- Copyright 2026 Tobias Thierer
+     SPDX-License-Identifier: Apache-2.0 -->
+<!-- Chrome Web Store small promo tile (440x280). Text uses Roboto. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280" viewBox="0 0 440 280">
+  <rect width="440" height="280" fill="#1a73e8"/>
+  <!-- The icon's clock, at one minute before the hour. -->
+  <g transform="translate(220 92) scale(1.1) translate(-64 -64)">
+    <circle cx="64" cy="64" r="44" fill="#ffffff"/>
+    <g stroke="#174ea6" stroke-width="10" stroke-linecap="round">
+      <line x1="64" y1="64" x2="60.9" y2="33"/>
+      <line x1="64" y1="64" x2="41" y2="64.2"/>
+    </g>
+    <circle cx="64" cy="64" r="7" fill="#174ea6"/>
+  </g>
+  <g font-family="Roboto" fill="#ffffff" text-anchor="middle">
+    <text x="220" y="204" font-size="40" font-weight="700">Don't Be Late</text>
+    <text x="220" y="240" font-size="18" fill="#d2e3fc">Never miss the start of a meeting</text>
+  </g>
+</svg>

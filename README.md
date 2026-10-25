@@ -280,6 +280,7 @@ After rebuilding, click the reload icon on the extension's card in
 | `static/manifest.json` | Extension manifest |
 | `static/managed_schema.json` | Schema of the Chrome policy settings |
 | `assets/icon.svg` | Icon source |
+| `assets/store/` | Chrome Web Store promo tile |
 | `docs/` | Website and privacy policy, published with GitHub Pages |
 
 The icon PNGs in `static/icons/` are rendered from `assets/icon.svg`. After
@@ -287,6 +288,15 @@ changing the SVG, regenerate them:
 
 ```sh
 npm install --no-save @resvg/resvg-js && node scripts/render-icons.mjs
+```
+
+The Chrome Web Store promo tile, `assets/store/promo-tile.png`, is rendered
+from `assets/store/promo-tile.svg` without an alpha channel, as the store
+requires. It needs the [Roboto](https://fonts.google.com/specimen/Roboto)
+font file:
+
+```sh
+npm install --no-save @resvg/resvg-js && node scripts/render-store-assets.mjs path/to/Roboto.ttf
 ```
 
 ## License
