@@ -69,8 +69,9 @@ already scheduled.
 
 The extension only reads your calendar events. It requests read-only access
 to events on calendars you own (`calendar.events.owned.readonly`) and your
-email address, to tell accounts apart. Calendar data is only stored in the browser and only sent to
-Google. Access tokens are kept in memory only. See the full
+email address, to tell accounts apart. Calendar data is only stored in the
+browser, and the extension sends it only to Google. Access tokens are kept
+in memory only. There's no server, analytics or AI. See the full
 [privacy policy](https://dontbelate.codepilot.org/privacy.html)
 ([source](docs/privacy.md)).
 

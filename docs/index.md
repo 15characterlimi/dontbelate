@@ -29,8 +29,24 @@ tab and the browser window comes to the front.
 You connect your Google accounts on the extension's settings page and grant
 it read-only access to your calendar events. The extension then checks your
 primary calendars for upcoming meetings every few minutes. Your calendar
-data stays in your browser: it's sent only to Google, never to the
-developer or anyone else. See the [privacy policy](privacy.html).
+data stays in your browser: the extension sends it only to Google, never
+to the developer or anyone else. See the [privacy policy](privacy.html).
+
+## Getting started
+
+1. Install Don't Be Late from the
+   [Chrome Web Store](https://chromewebstore.google.com/detail/knehdcieoogihbpggambkjdofadnnpnp).
+2. Its settings page opens automatically. You can reopen it later by
+   clicking the extension's icon in the Chrome toolbar.
+3. Click **Connect a Google account**, choose your account, and allow
+   Don't Be Late to see the events on Google calendars you own.
+4. That's it: from now on, meetings on your primary calendar with a Google
+   Meet, Zoom or Microsoft Teams link open one minute before they start.
+   To try it, create an event with a Google Meet link that starts in two
+   minutes.
+
+To stop, click **Remove** next to the account on the settings page, or
+uninstall the extension.
 
 ## Open source
 
