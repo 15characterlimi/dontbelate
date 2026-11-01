@@ -73,11 +73,12 @@ async function doSync(): Promise<void> {
         meetings[meeting.key] = meeting;
       }
     } catch (e) {
-      // E.g. offline or signed out: keep what we knew about this account's meetings.
+      // E.g. offline or signed out: keep what we knew about this account's
+      // meetings, except those that can no longer open.
       console.warn(`Syncing ${account.email} failed:`, e);
       if (e instanceof InteractionRequiredError) needsSignIn.push(account.email);
       for (const [key, meeting] of Object.entries(previous)) {
-        if (key.startsWith(`${account.id}/`)) meetings[key] = meeting;
+        if (key.startsWith(`${account.id}/`) && meeting.start >= now - GRACE_MS) meetings[key] = meeting;
       }
     }
   }
